@@ -9,6 +9,11 @@ import { stripe } from "../lib/stripe"
 import { GetStaticProps } from "next"
 import Stripe from "stripe"
 import Link from "next/link"
+import { Handbag } from "@phosphor-icons/react"
+import { useContext } from "react"
+import { CartContext } from "../context/CartContext"
+import Skeleton from "react-loading-skeleton"
+import 'react-loading-skeleton/dist/skeleton.css'
 
 interface HomeProps {
     products: {
@@ -16,6 +21,9 @@ interface HomeProps {
         name: string
         imageUrl: string
         price: string
+        description: string
+        defaultPriceId: string
+        quantity: number
     }[]
 }
 export default function Home({ products }: HomeProps) {
@@ -26,6 +34,8 @@ export default function Home({ products }: HomeProps) {
         }
     })
 
+    const { addProduct, toggleCart } = useContext(CartContext)
+
     return (
         <>
             <Head>
@@ -33,13 +43,34 @@ export default function Home({ products }: HomeProps) {
             </Head>
             <HomeContainer ref={sliderRef} className="keen-slider">
                 {products.map(product => {
+                    const handleAddToCart = (event: React.MouseEvent<HTMLButtonElement>) => {
+                        event.preventDefault()
+                        addProduct(product)
+                        toggleCart('open')
+                    }
+
                     return (
                         <Link href={`/product/${product.id}`} key={product.id} prefetch={false}>
                             <Product className="keen-slider__slide">
-                                <Image src={product.imageUrl} width={520} height={480} alt="" />
+                                {product.imageUrl ? (
+                                    <Image src={product.imageUrl} width={520} height={480} alt="" />
+                                ) : (
+                                    <>
+                                        <Skeleton highlightColor="#202024" width={485} height={656} />
+                                        <div className="skeletonFooter">
+                                            <Skeleton highlightColor="#202024" width={330} height={32} />
+                                            <Skeleton highlightColor="#202024" width={100} height={32} />
+                                        </div>
+                                    </>
+                                )}
                                 <footer>
-                                    <strong>{product.name}</strong>
-                                    <span>{product.price}</span>
+                                    <div>
+                                        <strong>{product.name}</strong>
+                                        <span>{product.price}</span>
+                                    </div>
+                                    <button onClick={handleAddToCart}>
+                                        <Handbag size={28} weight="bold" />
+                                    </button>
                                 </footer>
                             </Product>
                         </Link>
@@ -66,6 +97,9 @@ export const getStaticProps: GetStaticProps = async() => {
                 style: 'currency',
                 currency: 'BRL',
             }).format(price.unit_amount / 100),
+            description: product.description,
+            defaultPriceId: price.id,
+            quantity: 1
         }
     })
     return {

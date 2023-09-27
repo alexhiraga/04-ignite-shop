@@ -9,12 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.0.13",
     "@stitches/react": "^1.2.8",
+    "@stripe/stripe-js": "^2.1.6",
     "axios": "^1.5.0",
     "keen-slider": "^6.8.6",
     "next": "13.5.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-loading-skeleton": "^3.3.1",
     "stripe": "^13.6.0"
   },
   "devDependencies": {

@@ -1,20 +1,32 @@
 import Link from "next/link";
-import { ImageContainer, SuccessContainer } from "../styles/pages/success";
+import { ImageContainer, ProductsContainer, SuccessContainer } from "../styles/pages/success";
 import { GetServerSideProps } from "next";
 import { stripe } from "../lib/stripe";
 import Stripe from "stripe";
 import Image from "next/image";
 import Head from "next/head";
+import { useEffect, useContext } from "react";
+import { CartContext } from "../context/CartContext";
 
+interface ProductProps {
+    name: string
+    id: string
+    quantity: number
+    imageUrl: string
+}
 interface SuccessProps {
     customerName: string
-    product: {
-        name: string
-        imageUrl: string
-    }
+    products: ProductProps[]
 }
 
-export default function Success({ customerName, product }: SuccessProps) {
+export default function Success({ customerName, products }: SuccessProps) {
+    const { emptyTheCart } = useContext(CartContext)
+    useEffect(() => {
+        emptyTheCart()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+    const productsQuantity = products.reduce((acc, curr) => acc + curr.quantity, 0)
+
     return (
         <>
             <Head>
@@ -25,14 +37,21 @@ export default function Success({ customerName, product }: SuccessProps) {
                 </title>
             </Head>
             <SuccessContainer>
+                <ProductsContainer>
+                    {products.map(product => (
+                        <ImageContainer key={product.id}>
+                            {product.quantity > 1 && (
+                                <span>{product.quantity}</span>
+                            )}
+                            <Image src={product.imageUrl} width={120} height={110} alt="" title={product.name} />
+                        </ImageContainer>
+                    ))}
+                </ProductsContainer>
+
                 <h1>Compra efetuada!</h1>
 
-                <ImageContainer>
-                    <Image src={product.imageUrl} width={120} height={110} alt="" />
-                </ImageContainer>
-
                 <p>
-                    Uhuul <strong>{customerName}</strong>, sua <strong>{product.name}</strong> já está a caminho da sua casa.
+                    Uhuul <strong>{customerName}</strong>, sua compra de {productsQuantity > 1 ? productsQuantity + ' camisetas' : productsQuantity + ' camiseta'} já está a caminho da sua casa.
                 </p>
 
                 <Link href="/">
@@ -43,8 +62,8 @@ export default function Success({ customerName, product }: SuccessProps) {
     )
 }
 
-export const getServerSideProps: GetServerSideProps = async({ query, params }) => {
-    if(!query.session_id) {
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+    if (!query.session_id) {
         return {
             redirect: {
                 destination: '/',
@@ -60,15 +79,22 @@ export const getServerSideProps: GetServerSideProps = async({ query, params }) =
     })
 
     const customerName = session.customer_details.name
-    const product = session.line_items.data[0].price.product as Stripe.Product
+
+    const products = session.line_items.data
+
+    const productsInfo = products.map(product => {
+        return {
+            name: product.description,
+            id: product.id,
+            quantity: product.quantity,
+            imageUrl: (product.price.product as Stripe.Product).images[0]
+        }
+    })
 
     return {
         props: {
             customerName,
-            product: {
-                name: product.name,
-                imageUrl: product.images[0]
-            }
+            products: productsInfo
         }
     }
 }

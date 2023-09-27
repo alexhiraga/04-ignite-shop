@@ -36,20 +36,42 @@ export const SuccessContainer = styled('main', {
     },
 })
 
-export const ImageContainer = styled('main', {
-    width: '100%',
-    maxWidth: 130,
-    height: 145,
+export const ImageContainer = styled('div', {
+    width: 140,
+    height: 140,
     background: 'linear-gradient(180deg, #1ea483 0%, #7465d4 100%)',
-    borderRadius: 8,
+    borderRadius: '50%',
     padding: '0.25rem',
-    marginTop: '2rem',
-    
+    marginLeft: -52,
+    filter: 'drop-shadow(0 0 60px rgb(0, 0, 0, 0.8))',
+    position: 'relative',
+
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
 
     img: {
         objectFit: 'cover',
+    },
+
+    span: {
+        position: 'absolute',
+        top: 6,
+        left: 6,
+        background: '$green500',
+        width: 30,
+        height: 30,
+        borderRadius: '50%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '2px solid $gray100'
     }
+})
+
+export const ProductsContainer = styled('main', {
+    display: 'flex',
+    justifyContent: 'center',
+    marginRight: -52,
+    marginBottom: 24,
 })
